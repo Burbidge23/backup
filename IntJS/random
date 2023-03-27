@@ -1,0 +1,78 @@
+;(function() {
+    let textarea = document.querySelector('textarea[aria-label="Send a message to everyone"]')
+    let submit = document.querySelector('[role="button"][aria-label="Send a message to everyone"]')
+
+    if (!textarea || !submit)
+        return alert('Uh oh! Something went wrong. Do you have the chat panel open?')
+
+    function sendMessage(text) {
+        textarea.click()
+        textarea.value = text
+        submit.removeAttribute('aria-disabled')
+        submit.removeAttribute('disabled')
+        submit.click()
+    }
+
+    function setTimer(minutes) {
+        let readableMinutes = `${minutes} minute${minutes !== 1 ? 's' : ''}`
+
+        sendMessage(`⏳ Timer set for ${readableMinutes}`)
+
+        window.googleMeetTimer = setTimeout(()=>{
+            sendMessage(`🔔 Time is up (${readableMinutes})`)
+        }
+        , minutes * 60 * 1000)
+
+        if (minutes >= 2) {
+            window.googleMeetWarningTimer = setTimeout(()=>{
+                sendMessage(`⌛️ One minute left`)
+            }
+            , (minutes - 1) * 60 * 1000)
+        }
+
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 'Backspace' && event.ctrlKey && event.shiftKey) {
+                cancelTimer()
+            }
+        })
+    }
+
+    function cancelTimer() {
+        sendMessage(`🗑 Timer cancelled`)
+        clearTimeout(window.googleMeetTimer)
+        clearTimeout(window.googleMeetWarningTimer)
+    }
+
+    let container = document.querySelector('[role="heading"][aria-level="1"]')
+
+    let timerContainer = document.createElement('div')
+
+    let button = document.createElement('button')
+    button.textContent = 'Set Timer'
+
+    let input = document.createElement('input')
+    input.type = 'number'
+    input.value = 5
+    input.style = "width: 50px"
+
+    timerContainer.appendChild(input)
+    timerContainer.appendChild(button)
+    container.appendChild(timerContainer)
+
+    button.addEventListener('click', ()=>{
+        setTimer(input.value)
+
+        let cancelButton = document.createElement('button')
+        cancelButton.textContent = 'Cancel Timer'
+
+        cancelButton.addEventListener('click', ()=>{
+            cancelTimer()
+            cancelButton.remove()
+        }
+        )
+
+        timerContainer.appendChild(cancelButton)
+    }
+    )
+}
+)()
